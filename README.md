@@ -33,5 +33,5 @@ replaceSecrets('myGroup', 'mySecret', 'config/**/*', '.config');
 ```
 This will replace secrets in all files in the config directory and its subdirectories and save the resulting files in a directory called ".config".
 
-## License
+## License
 This package is licensed under the MIT License.
