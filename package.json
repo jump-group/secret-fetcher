@@ -13,6 +13,20 @@
     "node-fetch": "^3.3.0"
   },
   "bin": {
-    "secret-fetcher": "./bin/cli.js"
-  }
+    "secret-fetcher": "bin/cli.js"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jump-group/secret-fetcher.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/jump-group/secret-fetcher/issues"
+  },
+  "homepage": "https://github.com/jump-group/secret-fetcher#readme",
+  "description": ""
 }
