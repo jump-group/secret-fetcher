@@ -16,6 +16,11 @@ jobs:
         id: tagname
         run: |
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - run: npm install
       
       - name: 'Upload to NPM'
         uses: JS-DevTools/npm-publish@v1
