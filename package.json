@@ -1,6 +1,7 @@
 {
   "name": "@jumpgroup/secret-fetcher",
   "version": "1.0.0",
+  "author": "Jump Group srl",
   "main": "src/index.js",
   "license": "MIT",
   "type": "module",
@@ -12,6 +13,14 @@
     "js-yaml": "^4.1.0",
     "node-fetch": "^3.3.0"
   },
+  "bugs": {
+    "url": "https://github.com/jump-group/secret-fetcher/issues"
+  },
+  "homepage": "https://github.com/jump-group/secret-fetcher#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jump-group/secret-fetcher.git"
+  },
   "bin": {
     "secret-fetcher": "bin/cli.js"
   },
@@ -19,14 +28,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jump-group/secret-fetcher.git"
-  },
-  "author": "",
-  "bugs": {
-    "url": "https://github.com/jump-group/secret-fetcher/issues"
-  },
-  "homepage": "https://github.com/jump-group/secret-fetcher#readme",
-  "description": ""
+  "description": "A script to fetch secrets from Passwd Manager and inject them into a file or a group of files."
 }
