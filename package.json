@@ -1,6 +1,18 @@
 {
-  "name": "trellis-nudo-example-project",
+  "name": "@jumpgroup/secret-fetcher",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+  "main": "src/index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "commander": "^10.0.0",
+    "create-node-cli": "^1.6.1",
+    "glob": "^9.2.1",
+    "handlebars": "^4.7.7",
+    "js-yaml": "^4.1.0",
+    "node-fetch": "^3.3.0"
+  },
+  "bin": {
+    "secret-fetcher": "./bin/cli.js"
+  }
 }
