@@ -11,15 +11,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      #upload a new version to npm
-      - name: 'Get Tag Name'
-        id: tagname
-        run: |
-          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
-
       - uses: actions/setup-node@v1
         with:
           node-version: 18
+          registry-url: 'https://registry.npmjs.org'
+          
       - run: npm install
       
       - name: Publish package on NPM 📦
