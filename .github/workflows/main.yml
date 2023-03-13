@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 18
       - run: npm install
+
+      #npm create a new version
+      - name: 'Create new version'
+        run: npm version ${{ steps.tagname.outputs.tag }}
       
       - name: 'Upload to NPM'
         uses: JS-DevTools/npm-publish@v1
