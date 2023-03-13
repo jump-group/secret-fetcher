@@ -83,7 +83,7 @@ export const replaceSecrets = async (groupKey, groupSecret, input, output = null
         fs.readdirSync(output).forEach(file => {
             const filePath = path.join(output, file);
             if (fs.lstatSync(filePath).isDirectory()) {
-                fs.rmdirSync(filePath, {
+                fs.rm(filePath, {
                     recursive: true
                 });
             } else {
