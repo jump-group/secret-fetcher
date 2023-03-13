@@ -1,15 +1,24 @@
-name: Tag new npm package releases
-on:
+name: run npm-version pipeline
+on:  
   push:
-    branches:
-      - main
-    paths:
-      - package.json
-jobs:
-  tag-npm-release:
-    name: Tag new npm package releases
-    runs-on: ubuntu-latest
+    tags:
+      - '*'
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: neverendingqs/gh-action-tag-on-npm-version@master
+      - name: Checkout
+        uses: actions/checkout@master
+
+      #upload a new version to npm
+      - name: 'Get Tag Name'
+        id: tagname
+        run: |
+          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+      
+      - name: 'Upload to NPM'
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: ${{ steps.tagname.outputs.tag }}
