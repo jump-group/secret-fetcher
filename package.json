@@ -24,9 +24,10 @@
   "bin": {
     "secret-fetcher": "bin/cli.js"
   },
-  "devDependencies": {},
+  "devDependencies": {
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1 "
   },
   "description": "A script to fetch secrets from Passwd Manager and inject them into a file or a group of files."
 }
