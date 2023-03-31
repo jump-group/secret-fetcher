@@ -1,6 +1,6 @@
 {
   "name": "@jumpgroup/secret-fetcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "JumpGroup srl",
   "main": "src/index.js",
   "license": "MIT",
