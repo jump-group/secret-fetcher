@@ -1,4 +1,4 @@
-# Secrets Replacer
+# Secrets Fetcher
 
 This is a Node.js package that replaces secrets in configuration files. It works by fetching variables from a remote server, merging them with any additional variables provided, and then replacing placeholders in configuration files with the merged variables. The resulting files are then saved to a specified output directory.
 
