@@ -4,23 +4,16 @@ import { program } from "commander";
 import { replaceSecrets } from "../src/index.js"
 
 program
-    .command('hello')
-    .description('Say hello')
-    .action(() => {
-        console.log('Hello!');
-        console.log(process.argv['3']);
-    });
-
-program
     .command('replace')
     .description('Replace all repository secrets')
-    .argument('<groupKey>', 'Group key')
-    .argument('<secretKey>', 'Secret token for the group')
-    .argument('<input>', 'Input file or directory')
-    .argument('<output>', 'Output directory')
-    .argument('[variables]', 'Variables to be replaced')
-    .action((groupKey, secretKey, input, output, addVariables) => {
-        replaceSecrets(groupKey, secretKey, input, output, addVariables);
+    .option('-g, --groupKey [groupKey]', 'The name of the group')
+    .option('-s, --secretKey [secretKey]', 'Secret token for the group name')
+    .option('-i, --input [input]', 'Input file or directory')
+    .option('-o, --output [output]', 'Output directory')
+    .option('-v, --add-variables [addVariables]', 'Variables to be replaced')
+    .action((options) => {
+        const { groupKey, secretKey, input, output, addVariables} = options;
+        replaceSecrets({ groupKey: groupKey || "", groupSecret: secretKey || "", input: input || "trellis/**", output: output || ".trellis", addVariables: addVariables || "{\"trellis\":{\"admin_user\": \"{{ admin_user }}\"}}"});
     });
 
 program.parse(process.argv);

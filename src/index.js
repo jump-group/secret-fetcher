@@ -4,6 +4,7 @@ import path from "path";
 import { globSync } from 'glob';
 import fetch from 'node-fetch';
 import yaml from 'js-yaml';
+import { config } from 'dotenv';
 
 // Get the variables from the remote server
 const getRemoteKeys = async (groupKey, groupSecret) => {
@@ -43,6 +44,42 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
     return tagToObjectMap;
 }
 
+const getSettings = async (options = {}) => {  
+    const defaults = {
+      input: 'trellis/**',
+      output: '.trellis',
+      addVariables: {
+        "trellis": {
+          "admin_user": "{{ admin_user }}"
+        }
+      },
+    };
+  
+    const settings = {
+      ...defaults,
+      ...options
+    };
+  
+    // validazione delle proprietà obbligatorie
+    if (!settings.groupKey || !settings.groupSecret) {
+      throw new Error('groupKey e groupSecret devono essere definiti');
+    }
+  
+    return settings;
+  }
+
+// Get the variables from the local file
+const getLocalKeys = async () => {
+    const localFile = globSync(".secret-fetcher")[0];
+    if(!localFile){
+        throw new Error("No .secret_fetcher file found");
+    }
+
+    const variables = config({ path: '.secret-fetcher' }).parsed;
+
+    return variables;
+}
+
 //merge the variables with the group variables
 const mergeVariables = (variables, addVariables) => {
     const groups = [...new Set([...Object.keys(variables), ...Object.keys(addVariables)])];
@@ -65,42 +102,67 @@ const mergeVariables = (variables, addVariables) => {
     return mergedVariables;
 }
 
-export const replaceSecrets = async (groupKey, groupSecret, input, output = null, addVariables = {}) => {
+export const replaceSecrets = async (options) => {
+
+    console.log("Starting secret fetcher");
+    console.log("\n");
+
+    console.log("Get environment variables from .secret-fetcher file");
+    const secretFetcherOptions = await getLocalKeys();
+
+    //Remove from options null, empty and undefined values
+    Object.keys(options).forEach(key => {
+        if (options[key] === null || options[key] === undefined || options[key] === "") {
+            delete options[key];
+        }
+    });
+
+    options = {
+        ...secretFetcherOptions,
+        ...options
+    };
     
-    if (addVariables && typeof addVariables !== 'object') {
-        addVariables = JSON.parse(addVariables);
+    // get settings
+    console.log("Get all options");
+    options = await getSettings(options);
+    
+    if (options.addVariables && typeof options.addVariables !== 'object') {
+        options.addVariables = JSON.parse(options.addVariables);
     }
 
-    let variables = await getRemoteKeys(groupKey, groupSecret);
+    console.log("Get variables from Passwd");
+    let variables = await getRemoteKeys(options.groupKey, options.groupSecret);
 
     //merge the variables with the group variables
-    const mergedVariables = mergeVariables(variables, addVariables);
+    const mergedVariables = mergeVariables(variables, options.addVariables);
 
     //create a new directory called "output" if not exits yet
+    console.log("\n");
     console.log("Creating output directory");
 
-    if (fs.existsSync(output)) {
-        fs.readdirSync(output).forEach(file => {
-            const filePath = path.join(output, file);
+    if (fs.existsSync(options.output)) {
+        fs.readdirSync(options.output).forEach(file => {
+            const filePath = path.join(options.output, file);
             if (fs.lstatSync(filePath).isDirectory()) {
                 fs.rmSync(filePath, { recursive: true });
             } else {
                 fs.unlinkSync(filePath);
             }
         });
-        fs.rmdirSync(output);
+        fs.rmdirSync(options.output);
     }
 
-    fs.mkdirSync(output);
+    fs.mkdirSync(options.output);
 
     //get all the files in the input directory
-    const configFiles = globSync(input);
+    console.log("Get all the files in the input directory")
+    const configFiles = globSync(options.input);
 
     configFiles.forEach(file => {
 
         if(fs.lstatSync(file).isDirectory()){
             // if the file is a directory, create it in the output directory
-            fs.mkdirSync(output + "/" + file);
+            fs.mkdirSync(options.output + "/" + file);
         }else{
             //read the content of the file and compile it with the variables
             // console.log("Replacing secrets in " + file);
@@ -111,8 +173,7 @@ export const replaceSecrets = async (groupKey, groupSecret, input, output = null
             //Add the new file with the content to the .trellis directory
             console.log("Adding " + file + " to .trellis directory");
             console.log("\n");
-            fs.writeFileSync(output + "/" + file, outputContent);
-
+            fs.writeFileSync(options.output + "/" + file, outputContent);
         }
 
     });

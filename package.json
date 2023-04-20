@@ -1,6 +1,6 @@
 {
   "name": "@jumpgroup/secret-fetcher",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "JumpGroup srl",
   "main": "src/index.js",
   "license": "MIT",
@@ -8,8 +8,10 @@
   "dependencies": {
     "commander": "^10.0.0",
     "create-node-cli": "^1.6.1",
+    "dotenv": "^16.0.3",
     "glob": "^9.2.1",
     "handlebars": "^4.7.7",
+    "import": "^0.0.6",
     "js-yaml": "^4.1.0",
     "node-fetch": "^3.3.0"
   },
@@ -24,8 +26,7 @@
   "bin": {
     "secret-fetcher": "bin/cli.js"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1 "
   },
