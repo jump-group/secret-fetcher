@@ -44,6 +44,7 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
         });
     });
 
+
     return tagToObjectMap;
 }
 
@@ -107,6 +108,42 @@ const mergeVariables = (variables, addVariables) => {
     return mergedVariables;
 }
 
+//replace the variables in the files
+export const replaceFiles = async (input, output, variables) => {
+
+    //get all the files in the input directory
+    console.log("Get all the files in the input directory")
+    const configFiles = globSync(input);
+
+    configFiles.forEach(file => {
+
+        const directory = input.split('/')[0];
+
+        // ouput file path
+        const outputFile = file.slice(directory.length + 1);
+
+        if(file !== directory) {
+
+            if (fs.lstatSync(file).isDirectory()) {
+                // if the file is a directory, create it in the output directory
+                fs.mkdirSync(output + "/" + outputFile, { recursive: true });
+            } else {
+                //read the content of the file and compile it with the variables
+                console.log("Replacing secrets in " + file);
+                const content = fs.readFileSync(file).toString();
+                const template = Handlebars.compile(content);
+                const outputContent = template(variables);
+
+                //Add the new file with the content to the output directory
+                console.log("Adding " + file + " to  output directory");
+                console.log("\n");
+                fs.writeFileSync(output + "/" + outputFile, outputContent);
+            }
+        }
+
+    });
+}
+
 export const replaceSecrets = async (options) => {
 
     console.log("Starting secret fetcher");
@@ -145,45 +182,14 @@ export const replaceSecrets = async (options) => {
     console.log("\n");
     console.log("Creating output directory");
 
-    if (fs.existsSync(options.output)) {
-        fs.readdirSync(options.output).forEach(file => {
-            const filePath = path.join(options.output, file);
-            if (fs.lstatSync(filePath).isDirectory()) {
-                fs.rmSync(filePath, {
-                    recursive: true
-                });
-            } else {
-                fs.unlinkSync(filePath);
-            }
-        });
-        fs.rmdirSync(options.output);
+    // if options.output exits and is a directory, remove it
+
+    if (!fs.existsSync(options.output)) {
+        fs.mkdirSync(options.output, { recursive: true });
     }
 
-    fs.mkdirSync(options.output);
-
     //get all the files in the input directory
-    console.log("Get all the files in the input directory")
-    const configFiles = globSync(options.input);
-
-    configFiles.forEach(file => {
-
-        if (fs.lstatSync(file).isDirectory()) {
-            // if the file is a directory, create it in the output directory
-            fs.mkdirSync(options.output + "/" + file);
-        } else {
-            //read the content of the file and compile it with the variables
-            // console.log("Replacing secrets in " + file);
-            const content = fs.readFileSync(file).toString();
-            const template = Handlebars.compile(content);
-            const outputContent = template(mergedVariables);
-
-            //Add the new file with the content to the .trellis directory
-            console.log("Adding " + file + " to .trellis directory");
-            console.log("\n");
-            fs.writeFileSync(options.output + "/" + file, outputContent);
-        }
-
-    });
+    replaceFiles(options.input, options.output, mergedVariables);
 
     console.log("Done!");
 };

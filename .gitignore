@@ -2,3 +2,9 @@
 .trellis/
 trellis/
 node_modules/
+
+#test files
+docker-compose.yml
+docker/**
+stub/**
+
