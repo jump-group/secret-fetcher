@@ -1,6 +1,5 @@
 import Handlebars from "handlebars";
 import * as fs from 'fs';
-import path from "path";
 import {
     globSync
 } from 'glob';
@@ -9,6 +8,7 @@ import yaml from 'js-yaml';
 import {
     config
 } from 'dotenv';
+import path from 'path';
 
 // Get the variables from the remote server
 const getRemoteKeys = async (groupKey, groupSecret) => {
@@ -117,10 +117,10 @@ export const replaceFiles = async (input, output, variables) => {
 
     configFiles.forEach(file => {
 
-        const directory = input.split('/')[0];
-
         // ouput file path
-        const outputFile = file.slice(directory.length + 1);
+        const directory = input.replace(/.*\/src\//, '').split('/')[0];
+        var outputFile = file.replace(/.*\/src\//, '');
+        outputFile = outputFile.replace(directory, '');
 
         if(file !== directory) {
 
