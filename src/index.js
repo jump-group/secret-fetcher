@@ -34,7 +34,10 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
         item.tags.forEach(tag => {
             const [tagGroup, tagValue] = tag.split(":");
             if (tagGroup) {
-                const newTag = tagGroup === groupKey ? tagValue : tag;
+                var newTag = tagGroup;
+                if(tagValue) {
+                    newTag = tagGroup === groupKey ? tagValue : tag;
+                }
                 if (!tagToObjectMap[newTag]) {
                     tagToObjectMap[newTag] = {};
                 }
@@ -51,7 +54,7 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
 const getSettings = async (options = {}) => {
     const defaults = {
         input: 'trellis/**',
-        output: '.trellis',
+        output: '.trellis/',
         addVariables: {
             "trellis": {
                 "admin_user": "{{ admin_user }}"
@@ -114,19 +117,28 @@ export const replaceFiles = async (input, output, variables) => {
     //get all the files in the input directory
     console.log("Get all the files in the input directory")
     const configFiles = globSync(input);
+    var directory = "";
+    // check if the output is a directory or file
+    const isDirectory = output.endsWith('/');
+
+    if(isDirectory) {
+        directory = input.replace(/.*\/src\//, '').split('/')[0];
+    }
 
     configFiles.forEach(file => {
-
         // ouput file path
-        const directory = input.replace(/.*\/src\//, '').split('/')[0];
+
         var outputFile = file.replace(/.*\/src\//, '');
-        outputFile = outputFile.replace(directory, '');
+        
+        if(isDirectory) {
+            outputFile = outputFile.replace(directory, '');
+        }
 
         if(file !== directory) {
 
             if (fs.lstatSync(file).isDirectory()) {
                 // if the file is a directory, create it in the output directory
-                fs.mkdirSync(output + "/" + outputFile, { recursive: true });
+                fs.mkdirSync(output + outputFile, { recursive: true });
             } else {
                 //read the content of the file and compile it with the variables
                 console.log("Replacing secrets in " + file);
@@ -137,7 +149,15 @@ export const replaceFiles = async (input, output, variables) => {
                 //Add the new file with the content to the output directory
                 console.log("Adding " + file + " to  output directory");
                 console.log("\n");
-                fs.writeFileSync(output + "/" + outputFile, outputContent);
+                if(isDirectory) {
+                    console.log("Output file: " + output + outputFile);
+                    fs.writeFileSync(output + outputFile, outputContent);
+                } else {
+                    // create a file with output content
+                    console.log("Creating file " + output);
+                    fs.writeFileSync(output, outputContent);
+                }
+                
             }
         }
 
@@ -183,13 +203,15 @@ export const replaceSecrets = async (options) => {
     console.log("Creating output directory");
 
     // if options.output exits and is a directory, remove it
+    const isDirectory = options.output.endsWith('/');
 
-    if (!fs.existsSync(options.output)) {
+    //check if the output is a directory
+    if (!fs.existsSync(options.output) && isDirectory) {
         fs.mkdirSync(options.output, { recursive: true });
     }
 
     //get all the files in the input directory
     replaceFiles(options.input, options.output, mergedVariables);
 
-    console.log("Done!");
+    console.log("Done!\n");
 };
