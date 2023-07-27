@@ -1,18 +1,15 @@
 import Handlebars from "handlebars";
 import * as fs from 'fs';
-import {
-    globSync
-} from 'glob';
+import { globSync } from 'glob';
 import fetch from 'node-fetch';
 import yaml from 'js-yaml';
-import {
-    config
-} from 'dotenv';
-import path from 'path';
+import { config } from 'dotenv';
+
+const domain = "https://passwdservice.jumpgroup.it";
 
 // Get the variables from the remote server
 const getRemoteKeys = async (groupKey, groupSecret) => {
-    const baseUrl = 'https://red-darkness-mkradlyf82jj.vapor-farm-c1.com/api/passwords';
+    const baseUrl = domain + '/api/passwords';
 
     const params = '?word=' + groupKey + '&encrypted_word=' + groupSecret;
 
@@ -87,6 +84,47 @@ const getLocalKeys = async () => {
     }).parsed;
 
     return variables;
+}
+
+const addUpdateRemoteSecret = async(key, secret, note, env) => {
+    const baseUrl = domain + '/api/passwords';
+
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify({
+        "word": key,
+        "encrypted_word": secret,
+        "note": note,
+        "environment": env
+      });
+
+    var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+    };
+
+    var result = await fetch(baseUrl, requestOptions)
+        .then(async (res) => {
+            if (res.status === 500) {
+                // Se lo stato è 500, leggi il messaggio di errore dal corpo della risposta in formato JSON
+                const errorResponse = await res.json();
+                throw new Error(JSON.stringify(errorResponse));
+            } else {
+                return res.json();
+            }
+        })
+        .then((json) => {
+            return json;
+        })
+        .catch((error) => {
+            console.error(error); 
+            return null; // Ritorna null o un altro valore che ritieni opportuno in caso di errore.
+        });
+
+    return result;
 }
 
 //merge the variables with the group variables
@@ -215,3 +253,48 @@ export const replaceSecrets = async (options) => {
 
     console.log("Done!\n");
 };
+
+export const addUpdateSecret = async (options) => {
+
+    console.log("Starting secret fetcher");
+    console.log("\n");
+    console.log("Get environment variables from .secret-fetcher file");
+    const secretFetcherOptions = await getLocalKeys();
+
+    //Remove from options null, empty and undefined values
+    Object.keys(options).forEach(key => {
+        if (options[key] === null || options[key] === undefined || options[key] === "") {
+            delete options[key];
+        }
+    });
+
+    console.log("Get all options");
+    options = {
+        ...secretFetcherOptions,
+        ...options
+    };
+
+    console.log("Checking if Note is a valid yaml");
+
+    //check if the note is a valid yaml
+    const formattedVariable = options.note.replace(/\\n/g, '\n');
+    try {
+        yaml.loadAll(formattedVariable)[0];
+    }
+    catch (e) {
+        throw new Error("Note is not a valid yaml");
+    }
+
+    console.log("Note is a valid yaml");
+    
+    console.log("Adding secret to Passwd");
+    var result = await addUpdateRemoteSecret(options.groupKey, options.groupSecret, formattedVariable, options.env);
+
+    if(result === null) {
+        throw new Error('Error while adding secret to Passwd');
+    }
+
+    console.log(result);
+
+    console.log("Done!\n");
+}
