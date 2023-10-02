@@ -4,6 +4,7 @@ import { program } from "commander";
 import { replaceSecrets } from "../src/index.js";
 import { replaceFiles } from "../src/index.js";
 import { addUpdateSecret } from "../src/index.js";
+import { getSecrets } from "../src/index.js";
 
 program
     .command('replace')
@@ -38,6 +39,17 @@ program
     .option('-e, --env [env]', 'Env of the secret')
     .action((options) => {
         addUpdateSecret({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", note: options.note || "", env: options.env || "site"});
+    });
+
+program
+    .command('get-secrets')
+    .description('Get secrets')
+    .option('-g, --groupKey [groupKey]', 'The name of the group')
+    .option('-s, --secretKey [secretKey]', 'Secret token for the group name')
+    .option('-e, --env [env]', 'Env of the secret')
+    .option('-n, --name [name]', 'Name of the secret')
+    .action((options) => {
+        getSecrets({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", name: options.name || "", env: options.env || "site", name: options.name || ""});
     });
 
 program.parse(process.argv);

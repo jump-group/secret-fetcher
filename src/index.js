@@ -32,7 +32,7 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
             const [tagGroup, tagValue] = tag.split(":");
             if (tagGroup) {
                 var newTag = tagGroup;
-                if(tagValue) {
+                if (tagValue) {
                     newTag = tagGroup === groupKey ? tagValue : tag;
                 }
                 if (!tagToObjectMap[newTag]) {
@@ -86,7 +86,7 @@ const getLocalKeys = async () => {
     return variables;
 }
 
-const addUpdateRemoteSecret = async(key, secret, note, env) => {
+const addUpdateRemoteSecret = async (key, secret, note, env) => {
     const baseUrl = domain + '/api/passwords';
 
     var myHeaders = new Headers();
@@ -97,7 +97,7 @@ const addUpdateRemoteSecret = async(key, secret, note, env) => {
         "encrypted_word": secret,
         "note": note,
         "environment": env
-      });
+    });
 
     var requestOptions = {
         method: 'POST',
@@ -120,7 +120,7 @@ const addUpdateRemoteSecret = async(key, secret, note, env) => {
             return json;
         })
         .catch((error) => {
-            console.error(error); 
+            console.error(error);
             return null; // Ritorna null o un altro valore che ritieni opportuno in caso di errore.
         });
 
@@ -159,7 +159,7 @@ export const replaceFiles = async (input, output, variables) => {
     // check if the output is a directory or file
     const isDirectory = output.endsWith('/');
 
-    if(isDirectory) {
+    if (isDirectory) {
         directory = input.replace(/.*\/src\//, '').split('/')[0];
     }
 
@@ -167,12 +167,12 @@ export const replaceFiles = async (input, output, variables) => {
         // ouput file path
 
         var outputFile = file.replace(/.*\/src\//, '');
-        
-        if(isDirectory) {
+
+        if (isDirectory) {
             outputFile = outputFile.replace(directory, '');
         }
 
-        if(file !== directory) {
+        if (file !== directory) {
 
             if (fs.lstatSync(file).isDirectory()) {
                 // if the file is a directory, create it in the output directory
@@ -187,7 +187,7 @@ export const replaceFiles = async (input, output, variables) => {
                 //Add the new file with the content to the output directory
                 console.log("Adding " + file + " to  output directory");
                 console.log("\n");
-                if(isDirectory) {
+                if (isDirectory) {
                     console.log("Output file: " + output + outputFile);
                     fs.writeFileSync(output + outputFile, outputContent);
                 } else {
@@ -195,7 +195,7 @@ export const replaceFiles = async (input, output, variables) => {
                     console.log("Creating file " + output);
                     fs.writeFileSync(output, outputContent);
                 }
-                
+
             }
         }
 
@@ -286,15 +286,66 @@ export const addUpdateSecret = async (options) => {
     }
 
     console.log("Note is a valid yaml");
-    
+
     console.log("Adding secret to Passwd");
     var result = await addUpdateRemoteSecret(options.groupKey, options.groupSecret, formattedVariable, options.env);
 
-    if(result === null) {
+    if (result === null) {
         throw new Error('Error while adding secret to Passwd');
     }
 
     console.log(result);
 
     console.log("Done!\n");
+}
+
+export const getSecrets = async (options) => {
+
+    console.log("Starting secret fetcher");
+    console.log("\n");
+    console.log("Get environment variables from .secret-fetcher file");
+    const secretFetcherOptions = await getLocalKeys();
+
+    //Remove from options null, empty and undefined values
+    Object.keys(options).forEach(key => {
+        if (options[key] === null || options[key] === undefined || options[key] === "") {
+            delete options[key];
+        }
+    });
+
+    console.log("Get all options");
+    options = {
+        ...secretFetcherOptions,
+        ...options
+    };
+
+    // get settings
+    console.log("Get all options");
+    options = await getSettings(options);
+
+    console.log("Get variables from Passwd");
+    let variables = await getRemoteKeys(options.groupKey, options.groupSecret);
+
+    //merge the variables with the group variables
+    const mergedVariables = mergeVariables(variables, options.addVariables);
+
+    var result = [];
+
+    if(options.name){
+
+        //filter the variables by name
+        Object.keys(mergedVariables).forEach(key => {
+            if(key === options.name){
+                //push object with key
+                result[key] = mergedVariables[key];
+            }
+        });
+
+    }else{
+        result = mergedVariables;
+    }
+
+    console.log("Done!\n");
+
+    return result;
 }
