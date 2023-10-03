@@ -386,6 +386,10 @@ export const updateNoteSecret = async (options) => {
     console.log("Get note of secret from Passwd");
     const noteOfSecret = await getSecrets(options);
 
+    if (noteOfSecret.length == 0) {
+        throw new Error("Secret not found");
+    }
+
     //object to string
     const noteOfSecretString = JSON.stringify(noteOfSecret[options.name]);
 
