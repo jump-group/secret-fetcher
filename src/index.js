@@ -106,12 +106,13 @@ const addUpdateRemoteSecret = async (key, secret, note, env) => {
         redirect: 'follow'
     };
 
+    console.log("Adding secret to Passwd");
     var result = await fetch(baseUrl, requestOptions)
         .then(async (res) => {
             if (res.status === 500) {
                 // Se lo stato è 500, leggi il messaggio di errore dal corpo della risposta in formato JSON
-                const errorResponse = await res.json();
-                throw new Error(JSON.stringify(errorResponse));
+                console.log("Error while adding secret to Passwd");
+                throw new Error(res);
             } else {
                 return res.json();
             }
@@ -331,21 +332,87 @@ export const getSecrets = async (options) => {
 
     var result = [];
 
-    if(options.name){
+    if (options.name) {
 
         //filter the variables by name
         Object.keys(mergedVariables).forEach(key => {
-            if(key === options.name){
+            if (key === options.name) {
                 //push object with key
                 result[key] = mergedVariables[key];
             }
         });
 
-    }else{
+    } else {
         result = mergedVariables;
     }
 
     console.log("Done!\n");
 
     return result;
+}
+
+export const updateNoteSecret = async (options) => {
+
+    console.log("Updating note of secret...");
+
+    if (!options.name) {
+        throw new Error("Name is required");
+    }
+
+    if (!options.note) {
+        throw new Error("Note is required");
+    }
+
+    if(!options.env){
+        options.env = options.name.split(":")[1];
+        console.log(options.env);
+    }
+
+    console.log(options.note);
+    console.log("Checking if Note is a valid yaml");
+
+    var newNote = {};
+    //check if the note is a valid yaml
+    const formattedVariable = options.note.replace(/\\n/g, '\n');
+    try {
+        newNote = yaml.loadAll(formattedVariable)[0];
+    }
+    catch (e) {
+        throw new Error("Note is not a valid yaml");
+    }
+
+    console.log("Note is a valid yaml");
+
+    console.log("Get note of secret from Passwd");
+    const noteOfSecret = await getSecrets(options);
+
+    //object to string
+    const noteOfSecretString = JSON.stringify(noteOfSecret[options.name]);
+
+    var itemProperties = {};
+
+    try {
+        itemProperties = await yaml.loadAll(noteOfSecretString)[0];
+    }
+    catch (e) {
+        console.log(e);
+        throw new Error("Note is not a valid yaml");
+    }
+
+    //merge two notes objects give more priority to the new note
+    const mergedNote = {
+        ...itemProperties,
+        ...newNote
+    };
+
+    console.log(mergedNote);
+
+    console.log("Updating note of secret...");
+    const note = yaml.dump(mergedNote);
+
+    console.log(note);
+
+    console.log("Adding secret to Passwd")
+    console.log(options.groupKey, options.groupSecret, note, options.env);
+    await addUpdateSecret(options);
 }

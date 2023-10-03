@@ -4,7 +4,7 @@ import { program } from "commander";
 import { replaceSecrets } from "../src/index.js";
 import { replaceFiles } from "../src/index.js";
 import { addUpdateSecret } from "../src/index.js";
-import { getSecrets } from "../src/index.js";
+import { getSecrets, updateNoteSecret } from "../src/index.js";
 
 program
     .command('replace')
@@ -51,5 +51,17 @@ program
     .action((options) => {
         getSecrets({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", name: options.name || "", env: options.env || "site", name: options.name || ""});
     });
+
+program
+    .command('update-note-secret')
+    .description('Update note of a secret')
+    .option('-g, --groupKey [groupKey]', 'The name of the group')
+    .option('-s, --secretKey [secretKey]', 'Secret token for the group name')
+    .option('-na, --name [name]', 'Name of the secret')
+    .option('-nt, --note [note]', 'Note of the secret')
+    .action((options) => {
+        updateNoteSecret({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", name: options.name, note: options.note});
+    });
+    
 
 program.parse(process.argv);
