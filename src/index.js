@@ -332,11 +332,11 @@ export const getSecrets = async (options) => {
 
     var result = [];
 
-    if (options.name) {
+    if (options.env) {
 
         //filter the variables by name
         Object.keys(mergedVariables).forEach(key => {
-            if (key === options.name) {
+            if (key === options.env) {
                 //push object with key
                 result[key] = mergedVariables[key];
             }
@@ -355,20 +355,14 @@ export const updateNoteSecret = async (options) => {
 
     console.log("Updating note of secret...");
 
-    if (!options.name) {
-        throw new Error("Name is required");
-    }
-
     if (!options.note) {
         throw new Error("Note is required");
     }
 
     if(!options.env){
-        options.env = options.name.split(":")[1];
-        console.log(options.env);
+        options.env = "site";
     }
 
-    console.log(options.note);
     console.log("Checking if Note is a valid yaml");
 
     var newNote = {};
@@ -386,12 +380,13 @@ export const updateNoteSecret = async (options) => {
     console.log("Get note of secret from Passwd");
     const noteOfSecret = await getSecrets(options);
 
-    if (noteOfSecret.length == 0) {
+    //check if noteOfSecret is empty
+    if (noteOfSecret == []) {
         throw new Error("Secret not found");
     }
 
     //object to string
-    const noteOfSecretString = JSON.stringify(noteOfSecret[options.name]);
+    const noteOfSecretString = JSON.stringify(noteOfSecret[options.env]);
 
     var itemProperties = {};
 
@@ -409,14 +404,9 @@ export const updateNoteSecret = async (options) => {
         ...newNote
     };
 
-    console.log(mergedNote);
-
     console.log("Updating note of secret...");
-    const note = yaml.dump(mergedNote);
-
-    console.log(note);
+    options.note = yaml.dump(mergedNote);
 
     console.log("Adding secret to Passwd")
-    console.log(options.groupKey, options.groupSecret, note, options.env);
     await addUpdateSecret(options);
 }

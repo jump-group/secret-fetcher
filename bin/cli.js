@@ -58,9 +58,10 @@ program
     .option('-g, --groupKey [groupKey]', 'The name of the group')
     .option('-s, --secretKey [secretKey]', 'Secret token for the group name')
     .option('-na, --name [name]', 'Name of the secret')
+    .option('-e', '--env [env]', 'Env of the secret')
     .option('-nt, --note [note]', 'Note of the secret')
     .action((options) => {
-        updateNoteSecret({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", name: options.name, note: options.note});
+        updateNoteSecret({ groupKey: options.groupKey || "", groupSecret: options.secretKey || "", name: options.name, note: options.note, env: options.env || "site"});
     });
     
 
