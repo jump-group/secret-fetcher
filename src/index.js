@@ -9,6 +9,7 @@ const domain = "https://passwdservice.jumpgroup.it";
 
 // Get the variables from the remote server
 const getRemoteKeys = async (groupKey, groupSecret) => {
+
     const baseUrl = domain + '/api/passwords';
 
     const params = '?word=' + groupKey + '&encrypted_word=' + groupSecret;
@@ -17,6 +18,8 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
         method: 'GET',
         redirect: 'follow',
     };
+
+    console.log("Fetch secrets from Passwd");
 
     var result = await fetch(baseUrl + params, requestOptions).then((res) => {
         return res.json();
@@ -27,6 +30,18 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
     const tagToObjectMap = {};
 
     //create a map of tags to objects
+
+    while (!Array.isArray(result)) {
+        console.log("Error while getting secrets from Passwd");
+        result = await fetch(baseUrl + params, requestOptions).then((res) => {
+            return res.json();
+        }).then((json) => {
+            return json;
+        });
+    }
+
+    console.log("Parsing Received Secrets");
+
     result.forEach(item => {
         item.tags.forEach(tag => {
             const [tagGroup, tagValue] = tag.split(":");
