@@ -46,19 +46,16 @@ const getRemoteKeys = async (groupKey, groupSecret) => {
         item.tags.forEach(tag => {
             const [tagGroup, tagValue] = tag.split(":");
             if (tagGroup) {
-                var newTag = tagGroup;
-                if (tagValue) {
-                    newTag = tagGroup === groupKey ? tagValue : tag;
-                }
+                const newTag = tagValue || tagGroup;
                 if (!tagToObjectMap[newTag]) {
                     tagToObjectMap[newTag] = {};
                 }
                 const itemProperties = yaml.loadAll(item.note)[0];
-                tagToObjectMap[newTag] = itemProperties;
+                
+                tagToObjectMap[newTag] = { ...tagToObjectMap[newTag], ...itemProperties };
             }
         });
     });
-
 
     return tagToObjectMap;
 }
