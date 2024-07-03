@@ -1,13 +1,15 @@
 {
   "name": "@jumpgroup/secret-fetcher",
-  "version": "1.6.4",
+  "version": "2.0.0",
   "author": "JumpGroup srl",
   "main": "src/index.js",
+  "engines": {
+    "node": "20"
+  },
   "license": "MIT",
   "type": "module",
   "dependencies": {
     "commander": "^10.0.0",
-    "create-node-cli": "^1.6.1",
     "dotenv": "^16.0.3",
     "glob": "^9.2.1",
     "handlebars": "^4.7.7",
