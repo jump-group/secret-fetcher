@@ -85,17 +85,20 @@ const getSettings = async (options = {}) => {
 }
 
 // Get the variables from the local file
-const getLocalKeys = async () => {
+const getLocalKeys = async (required = true) => {
     const localFile = globSync(".secret-fetcher")[0];
     if (!localFile) {
-        throw new Error("No .secret_fetcher file found");
+        if (required) {
+            throw new Error("No .secret_fetcher file found");
+        }
+        return {};
     }
 
     const variables = config({
         path: '.secret-fetcher'
     }).parsed;
 
-    return variables;
+    return variables || {};
 }
 
 const addUpdateRemoteSecret = async (key, secret, note, env) => {
@@ -220,15 +223,24 @@ export const replaceSecrets = async (options) => {
     console.log("Starting secret fetcher");
     console.log("\n");
 
-    console.log("Get environment variables from .secret-fetcher file");
-    const secretFetcherOptions = await getLocalKeys();
-
     //Remove from options null, empty and undefined values
     Object.keys(options).forEach(key => {
         if (options[key] === null || options[key] === undefined || options[key] === "") {
             delete options[key];
         }
     });
+
+    // Check if groupKey and groupSecret are provided, if not try to get from .secret-fetcher file
+    const requiresLocalFile = !options.groupKey || !options.groupSecret;
+    let secretFetcherOptions = {};
+    
+    if (requiresLocalFile) {
+        console.log("Get environment variables from .secret-fetcher file");
+        secretFetcherOptions = await getLocalKeys(true);
+    } else {
+        console.log("Using provided groupKey and groupSecret");
+        secretFetcherOptions = await getLocalKeys(false);
+    }
 
     options = {
         ...secretFetcherOptions,
@@ -271,15 +283,25 @@ export const addUpdateSecret = async (options) => {
 
     console.log("Starting secret fetcher");
     console.log("\n");
-    console.log("Get environment variables from .secret-fetcher file");
-    const secretFetcherOptions = await getLocalKeys();
-
+    
     //Remove from options null, empty and undefined values
     Object.keys(options).forEach(key => {
         if (options[key] === null || options[key] === undefined || options[key] === "") {
             delete options[key];
         }
     });
+
+    // Check if groupKey and groupSecret are provided, if not try to get from .secret-fetcher file
+    const requiresLocalFile = !options.groupKey || !options.groupSecret;
+    let secretFetcherOptions = {};
+    
+    if (requiresLocalFile) {
+        console.log("Get environment variables from .secret-fetcher file");
+        secretFetcherOptions = await getLocalKeys(true);
+    } else {
+        console.log("Using provided groupKey and groupSecret");
+        secretFetcherOptions = await getLocalKeys(false);
+    }
 
     console.log("Get all options");
     options = {
@@ -316,15 +338,25 @@ export const getSecrets = async (options) => {
 
     console.log("Starting secret fetcher");
     console.log("\n");
-    console.log("Get environment variables from .secret-fetcher file");
-    const secretFetcherOptions = await getLocalKeys();
-
+    
     //Remove from options null, empty and undefined values
     Object.keys(options).forEach(key => {
         if (options[key] === null || options[key] === undefined || options[key] === "") {
             delete options[key];
         }
     });
+
+    // Check if groupKey and groupSecret are provided, if not try to get from .secret-fetcher file
+    const requiresLocalFile = !options.groupKey || !options.groupSecret;
+    let secretFetcherOptions = {};
+    
+    if (requiresLocalFile) {
+        console.log("Get environment variables from .secret-fetcher file");
+        secretFetcherOptions = await getLocalKeys(true);
+    } else {
+        console.log("Using provided groupKey and groupSecret");
+        secretFetcherOptions = await getLocalKeys(false);
+    }
 
     console.log("Get all options");
     options = {
@@ -370,6 +402,30 @@ export const updateNoteSecret = async (options) => {
     if (!options.note) {
         throw new Error("Note is required");
     }
+
+    //Remove from options null, empty and undefined values
+    Object.keys(options).forEach(key => {
+        if (options[key] === null || options[key] === undefined || options[key] === "") {
+            delete options[key];
+        }
+    });
+
+    // Check if groupKey and groupSecret are provided, if not try to get from .secret-fetcher file
+    const requiresLocalFile = !options.groupKey || !options.groupSecret;
+    let secretFetcherOptions = {};
+    
+    if (requiresLocalFile) {
+        console.log("Get environment variables from .secret-fetcher file");
+        secretFetcherOptions = await getLocalKeys(true);
+    } else {
+        console.log("Using provided groupKey and groupSecret");
+        secretFetcherOptions = await getLocalKeys(false);
+    }
+
+    options = {
+        ...secretFetcherOptions,
+        ...options
+    };
 
     if(!options.env){
         options.env = "site";
