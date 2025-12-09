@@ -1,176 +1,327 @@
 # Secrets Fetcher
 
-This is a Node.js package that replaces secrets in configuration files. It works by fetching variables from a remote server, merging them with any additional variables provided, and then replacing placeholders in configuration files with the merged variables. The resulting files are then saved to a specified output directory.
+A Node.js package that seamlessly replaces secrets in configuration files. It fetches variables from a remote password service, merges them with additional variables, and replaces placeholders in your configuration files using Handlebars templating.
 
-## Installation
-To install this package, run the following command:
+## 🚀 Features
+
+- **Flexible Authentication**: Use credentials via parameters or configuration file
+- **Template Processing**: Handlebars-based placeholder replacement
+- **Multiple Commands**: Replace secrets, manage passwords, and retrieve configurations
+- **Environment Support**: Manage secrets across different environments (staging, production, site)
+- **CLI & Programmatic**: Use as command-line tool or import as Node.js module
+
+## 📦 Installation
 
 ```sh
 npm install @jumpgroup/secret-fetcher
 ```
 
-## Usage
+## 🔧 Configuration
 
-To use this package you can import the:
-
-- 'replaceSecrets', 
-- 'replaceFiles' 
-- 'addUpdateSecret' 
-
-functions from the package and call it with the necessary parameters or you can use this functions like a command.
-
-### Include as a functions
-If you want to use this like a functions has the following signature:
-
-#### replaceSecrets
-
-```js
-replaceSecrets(groupKey, groupSecret, input, output, addVariables = {})
-```
-Here is an explanation of the parameters:
-<ul>
-  <li><code>groupKey</code>: The key of the group of variables to fetch from the remote server.</li>
-  <li><code>groupSecret</code>: The secret key of the group of variables to fetch from the remote server.</li>
-  <li><code>input</code>: The input file or directory where the configuration files to replace secrets are located.</li>
-  <li><code>output</code>: The output directory where the resulting files will be saved. </li>
-  <li><code>addVariables</code>: (Optional) Additional variables to merge with the fetched variables. This parameter should be an object containing the additional variables. If the additional variables are provided as a string, they will be parsed as JSON.</li>
-</ul>
-
-#### replaceFiles
-  
-```js
-replaceFiles(input, output, addVariables = {})
+### Option 1: Configuration File (Traditional)
+Create a `.secret-fetcher` file in your project root:
+```env
+groupKey=myGroupKey
+groupSecret=myGroupSecret
+# other optional parameters
 ```
 
-Here is an explanation of the parameters:
-<ul>
-  <li><code>input</code>: The input file or directory where the configuration files to replace secrets are located.</li>
-  <li><code>output</code>: The output directory where the resulting files will be saved. </li>
-  <li><code>addVariables</code>: (Optional) Additional variables to merge with the fetched variables. This parameter should be an object containing the additional variables. If the additional variables are provided as a string, they will be parsed as JSON.</li>
-</ul>
+### Option 2: Direct Parameters (New in v2.1.0)
+Pass credentials directly as parameters - no configuration file needed!
 
-#### addUpdateSecret
+## 📚 Available Functions
 
-```js
-addUpdateSecret(groupKey, groupSecret, note, env)
-```
+- **`replaceSecrets`** - Replace secrets in configuration files
+- **`replaceFiles`** - Replace variables in files (without remote fetch)
+- **`addUpdateSecret`** - Add or update secrets in the password service
+- **`getSecrets`** - Retrieve secrets from the password service  
+- **`updateNoteSecret`** - Update secret configurations
 
-Here is an explanation of the parameters:
-<ul>
-  <li><code>groupKey</code>: The key of the group of variables to fetch from the remote server.</li>
-  <li><code>groupSecret</code>: The secret key of the group of variables to fetch from the remote server.</li>
-  <li><code>note</code>: The note of the secret to add or update.</li>
-  <li><code>env</code>: The environment of the secret to add or update. It can be "staging" or "production" or "site".</li>
-</ul>
+## 💻 Programmatic Usage
 
-### Include as a command
-If you want to use this like a command you can use the following commands:
-
-#### replaceSecrets
-
-To replace secrets in configuration files, use the following command:
-
-```sh  
-secret-fetcher replace-secrets --groupKey myGroup --groupSecret mySecret --input config/**/* --output .config --addVariables '{"myVariable": "myValue"}'
-```
-
-The following options are available:
-<ul>
-  <li><code>--groupKey</code>: The key of the group of variables to fetch from the remote server.</li>
-  <li><code>--groupSecret</code>: The secret key of the group of variables to fetch from the remote server.</li>
-  <li><code>--input</code>: The input file or directory where the configuration files to replace secrets are located.</li>
-  <li><code>--output</code>: The output directory where the resulting files will be saved. </li>
-  <li><code>--addVariables</code>: (Optional) Additional variables to merge with the fetched variables. This parameter should be an object containing the additional variables. If the additional variables are provided as a string, they will be parsed as JSON.</li>
-</ul>
-
-#### replaceFiles
-
-To replace secrets in configuration files, use the following command:
-
-```sh
-secret-fetcher replace-files --input config/**/* --output .config --variables '{"myVariable": "myValue"}'
-```
-
-The following options are available:
-<ul>
-  <li><code>--input</code>: The input file or directory where the configuration files to replace secrets are located.</li>
-  <li><code>--output</code>: The output directory where the resulting files will be saved. </li>
-  <li><code>--variables</code>: (Optional) Additional variables to merge with the fetched variables. This parameter should be an object containing the additional variables. If the additional variables are provided as a string, they will be parsed as JSON.</li>
-</ul>
-
-#### addUpdateSecret
-
-To add or update a secret, use the following command:
-
-```sh
-secret-fetcher add-update-secret --groupKey myGroup --groupSecret mySecret --note myNote --env site
-```
-
-The following options are available:
-<ul>
-  <li><code>--groupKey</code>: The key of the group of variables to fetch from the remote server.</li>
-  <li><code>--groupSecret</code>: The secret key of the group of variables to fetch from the remote server.</li>
-  <li><code>--note</code>: The note of the secret to add or update.</li>
-  <li><code>--env</code>: The environment of the secret to add or update. It can be "staging" or "production" or "site".</li>
-</ul>
-
-## Example Usage
-
-### Include as a functions
-
-#### replaceSecrets
+### replaceSecrets(options)
+Replace secrets in configuration files by fetching from remote service.
 
 ```js
 import { replaceSecrets } from '@jumpgroup/secret-fetcher';
 
-replaceSecrets('myGroup', 'mySecret', 'config/**/*', '.config'); 
-```
-This will replace secrets in all files in the config directory and its subdirectories and save the resulting files in a directory called ".config".
+// With credentials (no config file needed)
+await replaceSecrets({
+  groupKey: 'myGroup',
+  groupSecret: 'mySecret', 
+  input: 'config/**/*',
+  output: '.config/',
+  addVariables: { myVar: 'myValue' }
+});
 
-#### replaceFiles
+// Using .secret-fetcher file
+await replaceSecrets({
+  input: 'config/**/*',
+  output: '.config/'
+});
+```
+
+**Parameters:**
+- `groupKey` *(optional)*: Group identifier for remote secrets
+- `groupSecret` *(optional)*: Secret key for authentication  
+- `input` *(optional)*: Input file/directory pattern (default: `'trellis/**'`)
+- `output` *(optional)*: Output directory (default: `'.trellis/'`)
+- `addVariables` *(optional)*: Additional variables to merge
+
+### replaceFiles(input, output, variables)
+Replace variables in files without remote fetching.
 
 ```js
 import { replaceFiles } from '@jumpgroup/secret-fetcher';
 
-replaceFiles('config/**/*', '.config'); 
+await replaceFiles('config/**/*', '.config/', {
+  database: { host: 'localhost', port: 5432 },
+  api: { endpoint: 'https://api.example.com' }
+});
 ```
 
-This will replace secrets in all files in the config directory and its subdirectories and save the resulting files in a directory called ".config".
-
-#### addUpdateSecret
+### addUpdateSecret(options)
+Add or update a secret in the password service.
 
 ```js
 import { addUpdateSecret } from '@jumpgroup/secret-fetcher';
 
-addUpdateSecret('myGroup', 'mySecret', 'myNote', 'site'); 
+await addUpdateSecret({
+  groupKey: 'myGroup',
+  groupSecret: 'mySecret',
+  note: 'database:\n  host: localhost\n  port: 5432',
+  env: 'production'
+});
 ```
 
-This will create or update a secret with the note "myNote" using tag and name like "myGroup-site".
+### getSecrets(options) 
+Retrieve secrets from the password service.
 
-### Include as a command
+```js
+import { getSecrets } from '@jumpgroup/secret-fetcher';
 
-#### replaceSecrets
+// Get all secrets for a group
+const secrets = await getSecrets({
+  groupKey: 'myGroup',
+  groupSecret: 'mySecret'
+});
 
-```sh
-secret-fetcher replace-secrets --groupKey myGroup --groupSecret mySecret --input config/**/* --output .config --addVariables '{"myVariable": "myValue"}'
+// Get secrets for specific environment
+const prodSecrets = await getSecrets({
+  groupKey: 'myGroup', 
+  groupSecret: 'mySecret',
+  env: 'production'
+});
 ```
 
-This will replace secrets in all files in the config directory and its subdirectories and save the resulting files in a directory called ".config".
+### updateNoteSecret(options)
+Update the configuration/note of an existing secret.
 
-#### replaceFiles
+```js
+import { updateNoteSecret } from '@jumpgroup/secret-fetcher';
 
-```sh
-secret-fetcher replace-files --input config/**/* --output .config --variables '{"myVariable": "myValue"}'
+await updateNoteSecret({
+  groupKey: 'myGroup',
+  groupSecret: 'mySecret', 
+  env: 'site',
+  note: 'updated_key: new_value\nexisting_key: existing_value'
+});
 ```
 
-This will replace secrets in all files in the config directory and its subdirectories and save the resulting files in a directory called ".config".
+## 🖥️ CLI Usage
 
-#### addUpdateSecret
+All commands support both credential methods:
 
-```sh
-secret-fetcher add-update-secret --groupKey myGroup --groupSecret mySecret --note myNote --env site
+### replace
+Replace secrets in configuration files.
+
+```bash
+# With credentials (recommended)
+secret-fetcher replace -g myGroup -s mySecret -i "config/**" -o ".config/"
+
+# Using .secret-fetcher file  
+secret-fetcher replace -i "config/**" -o ".config/"
+
+# With additional variables
+secret-fetcher replace -g myGroup -s mySecret -v '{"extra":"value"}'
 ```
 
-This will create or update a secret with the note "myNote" using tag and name like "myGroup-site".
-## License
+**Options:**
+- `-g, --groupKey` - Group identifier
+- `-s, --secretKey` - Secret key for authentication
+- `-i, --input` - Input file/directory pattern (default: `trellis/**`)
+- `-o, --output` - Output directory (default: `.trellis/`) 
+- `-v, --add-variables` - Additional variables as JSON string
+
+### replace-files
+Replace variables in files without fetching from remote service.
+
+```bash
+secret-fetcher replace-files -i "config/**" -o ".config/" -v '{"db":"localhost"}'
+```
+
+**Options:**
+- `-i, --input` - Input file/directory pattern *(required)*
+- `-o, --output` - Output directory *(required)*
+- `-v, --variables` - Variables as JSON string *(required)*
+
+### add-update-secret
+Add or update a secret in the password service.
+
+```bash
+# Add/update a secret
+secret-fetcher add-update-secret -g myGroup -s mySecret -n "db_host: localhost" -e production
+
+# Using .secret-fetcher file
+secret-fetcher add-update-secret -n "api_key: xyz123" -e site
+```
+
+**Options:**
+- `-g, --groupKey` - Group identifier
+- `-s, --secretKey` - Secret key for authentication
+- `-n, --note` - Secret configuration as YAML string
+- `-e, --env` - Environment (default: `site`)
+
+### get-secrets ✨ *New*
+Retrieve and display secrets from the password service.
+
+```bash
+# Get all secrets for a group
+secret-fetcher get-secrets -g myGroup -s mySecret
+
+# Get secrets for specific environment
+secret-fetcher get-secrets -g myGroup -s mySecret -e production
+
+# Filter by name
+secret-fetcher get-secrets -g myGroup -s mySecret -n mySecretName
+```
+
+**Options:**
+- `-g, --groupKey` - Group identifier  
+- `-s, --secretKey` - Secret key for authentication
+- `-e, --env` - Filter by environment
+- `-n, --name` - Filter by secret name
+
+### update-note-secret ✨ *New*
+Update the configuration of an existing secret.
+
+```bash
+# Update secret configuration
+secret-fetcher update-note-secret -g myGroup -s mySecret -nt "new_key: new_value" -e site
+
+# Update using .secret-fetcher file
+secret-fetcher update-note-secret -na mySecret -nt "updated_config: true"
+```
+
+**Options:**
+- `-g, --groupKey` - Group identifier
+- `-s, --secretKey` - Secret key for authentication  
+- `-na, --name` - Secret name to update
+- `-e, --env` - Environment (default: `site`)
+- `-nt, --note` - New configuration as YAML string
+
+## 📖 Examples
+
+### Configuration File Template
+Your configuration files can use Handlebars syntax:
+
+```yaml
+# config/database.yml
+production:
+  host: {{ database.host }}
+  port: {{ database.port }}
+  username: {{ database.username }}
+  password: {{ database.password }}
+
+development:
+  host: localhost
+  port: 5432
+```
+
+### Complete Workflow Example
+
+```bash
+# 1. Add a secret to the password service
+secret-fetcher add-update-secret \
+  -g "myapp" \
+  -s "secret123" \
+  -n "database:
+    host: prod-db.example.com
+    port: 5432
+    username: myapp_user
+    password: secure_password" \
+  -e production
+
+# 2. Process configuration files
+secret-fetcher replace \
+  -g "myapp" \
+  -s "secret123" \
+  -i "config/**/*.yml" \
+  -o "deploy/"
+
+# 3. Verify the secrets were retrieved
+secret-fetcher get-secrets -g "myapp" -s "secret123" -e production
+```
+
+### Programmatic Integration
+
+```js
+import { replaceSecrets, getSecrets } from '@jumpgroup/secret-fetcher';
+
+async function deployApp() {
+  try {
+    // Get current secrets
+    const secrets = await getSecrets({
+      groupKey: 'myapp',
+      groupSecret: 'secret123',
+      env: 'production'
+    });
+    
+    console.log('Available secrets:', Object.keys(secrets));
+    
+    // Process configuration files
+    await replaceSecrets({
+      groupKey: 'myapp',
+      groupSecret: 'secret123',
+      input: 'config/**/*.yml',
+      output: 'deploy/',
+      addVariables: {
+        app: {
+          name: 'MyApp',
+          version: process.env.APP_VERSION
+        }
+      }
+    });
+    
+    console.log('Configuration files processed successfully!');
+  } catch (error) {
+    console.error('Deployment failed:', error.message);
+  }
+}
+```
+
+## 🛡️ Security Best Practices
+
+- **Never commit** `.secret-fetcher` files to version control
+- Use **environment variables** or secure parameter stores in CI/CD
+- Regularly **rotate** your group secrets  
+- Use **specific environments** to isolate secrets (production, staging, etc.)
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**"No .secret_fetcher file found"**
+- Either create the file or pass credentials via CLI parameters
+- Ensure the file is in the current working directory
+
+**"groupKey e groupSecret devono essere definiti"**  
+- Provide credentials either via parameters or configuration file
+- Check that your `.secret-fetcher` file contains both `groupKey` and `groupSecret`
+
+**"Note is not a valid yaml"**
+- Ensure your note parameter contains valid YAML syntax
+- Use proper indentation and escaping for special characters
+
+## 📝 License
 This package is licensed under the MIT License.
