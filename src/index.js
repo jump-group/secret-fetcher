@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import yaml from 'js-yaml';
 import { config } from 'dotenv';
 
-const domain = "https://passwdservice.jumpgroup.it";
+const domain = "https://passwdservicev2.jumpgroup.it";
 
 // Get the variables from the remote server
 const getRemoteKeys = async (groupKey, groupSecret) => {
