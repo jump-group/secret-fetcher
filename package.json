@@ -4,7 +4,7 @@
   "author": "JumpGroup srl",
   "main": "src/index.js",
   "engines": {
-    "node": "24"
+    "node": "22"
   },
   "license": "MIT",
   "type": "module",
